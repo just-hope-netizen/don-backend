@@ -95,14 +95,21 @@ export const getProducts = async (req, res) => {
     if (queryProduct) {
       products = await Product.find({ title: { $regex: queryProduct } })
     } else if (queryCategory) {
-      products = await Product.find({
+      const getProducts = await Product.find({
         categories: {
           $in: [queryCategory],
         },
       });
+      products = []
+      getProducts.forEach(product => {
+        const {title, price, _id } = product
+        const details = {title, price, _id}
+        products.push(details)
+      })
     } else {
       products = await Product.find()
     }
+    // return
     res.status(200).json(products);
   } catch (err) {
     res.status(500).json(err);
