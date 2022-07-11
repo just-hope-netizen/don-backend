@@ -28,11 +28,11 @@ mongoose
 app.use(cors());
 
 
-// parse incoming url payload ++++
-app.use(express.urlencoded({extended: true}));
-
 // parse incoming body payload
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
+// parse incoming url payload ++++
+app.use(express.urlencoded({extended: true, limit: '50mb'}));
+
 
 // auth routes
 app.use('/auth', authRoute );

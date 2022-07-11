@@ -4,17 +4,22 @@ const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
   image: {
-    data: Buffer,
-    contentType: String,
-    path: String
+    public_id: {
+      type: String,
+      required: true
+    },
+     url: {
+      type: String,
+      required: true
+    }
   },
   title: {
-    type:String,
+    type: String,
     required: true,
-    unique:true
+    unique: true
   },
   price: {
-    type:String,
+    type: String,
     required: true,
   },
   categories: {
@@ -22,8 +27,8 @@ const productSchema = new Schema({
     required: true,
   }
 
-  
-}, {timestamps: true});
+
+}, { timestamps: true });
 
 const Product = mongoose.model('Product', productSchema);
-export  default Product;
+export default Product;

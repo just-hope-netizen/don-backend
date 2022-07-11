@@ -1,22 +1,31 @@
 import Product from '../models/product.js';
-
-import fs from 'fs';
+import cloudinary from '../utils/clodinary.js';
 
 
 export const createProduct = async (req, res) => {
-  const newProduct = new Product({
-    image: {
-      data: fs.readFileSync('uploads/' + req.file.filename),
-      contentType: req.file.mimetype,
-      path: req.file.path
 
-    },
-    title: req.body.title,
-    price: req.body.price,
-    categories: req.body.categories
-  });
+  const { image, price, category, title } = req.body;
+  //upload image
+  const uploadedImage = await cloudinary.v2.uploader.upload(image,
+    { folder: 'don-remolo__products-image' },
+    (error, result) => {
+      if (error) {
+        res.status(500).json(error);
+      }
+
+    });
 
   try {
+    const newProduct = new Product({
+      image: {
+        public_id: uploadedImage.public_id,
+        url: uploadedImage.secure_url
+      },
+      title: title,
+      price: price,
+      categories: category
+    });
+
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (err) {
@@ -26,27 +35,34 @@ export const createProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-
-  // delete the former image from uploads folder 
-  const product = await Product.findById(req.params.id)
-  fs.unlink(product.image.path, (err) => { if (err) throw err })
+  const { image, price, category, title } = req.body;
 
   try {
-    //set new image
+    //delete former img from cloudinary
+    const foundProduct = await Product.findById(req.params.id);
+    const formerImage = foundProduct.image.public_id;
+    cloudinary.v2.uploader.destroy(formerImage)
+
+    //upload new image
+    const uploadedImage = await cloudinary.v2.uploader.upload(image,
+      { folder: 'don-remolo__products-image' },
+      (error, result) => {
+        if (error) {
+          res.status(500).json(error);
+        }
+
+      });
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
           image: {
-            data: fs.readFileSync('uploads/' + req.file.filename),
-            contentType: req.file.mimetype,
-            path: req.file.path
-
+            public_id: uploadedImage.public_id,
+            url: uploadedImage.secure_url
           },
-          title: req.body.title,
-          price: req.body.price,
-          categories: req.body.categories
-
+          title: title,
+          price: price,
+          categories: category
         }
       },
       {
@@ -63,12 +79,12 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
+    //delete  img from cloudinary
+    const foundProduct = await Product.findById(req.params.id);
+    const formerImage = foundProduct.image.public_id;
+    cloudinary.v2.uploader.destroy(formerImage)
+
     await Product.findByIdAndDelete(req.params.id);
-    // delete image from uploads folder
-    fs.unlink(product.image.path, (err) => {
-      if (err) throw err
-    })
     res.status(200).json('Product has been deleted');
   } catch (err) {
     res.status(500).json(err);
@@ -95,21 +111,15 @@ export const getProducts = async (req, res) => {
     if (queryProduct) {
       products = await Product.find({ title: { $regex: queryProduct } })
     } else if (queryCategory) {
-      const getProducts = await Product.find({
+      products = await Product.find({
         categories: {
           $in: [queryCategory],
         },
       });
-      products = []
-      getProducts.forEach(product => {
-        const {title, price, _id } = product
-        const details = {title, price, _id}
-        products.push(details)
-      })
+
     } else {
       products = await Product.find()
     }
-    // return
     res.status(200).json(products);
   } catch (err) {
     res.status(500).json(err);
