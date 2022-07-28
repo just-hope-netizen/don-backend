@@ -56,7 +56,8 @@ export const postUser = async (req, res) => {
 const sendVerificationEmail = async (createdUser, res) => {
   const { _id, email } = createdUser._doc;
   //url to be used in the email
-  const currentUrl = 'https://don-remolo.netlify.app/';
+  const currentUrl = 'http://localhost:3000/'
+  // const currentUrl = 'https://don-remolo.netlify.app/';
 
   const uniqueString = v4() + _id;
 
@@ -124,7 +125,7 @@ export const verifyUser = async (req, res) => {
         UserVerification.deleteOne({ userId })
         User.deleteOne({ _id: userId })
         res.status(401).json({
-          message: 'link has expired',
+          msg: 'link has expired',
         })
       } else {
         //check if strings match
@@ -134,24 +135,24 @@ export const verifyUser = async (req, res) => {
         );
         const decryptString = hashedString.toString(CryptoJS.enc.Utf8);
 
-        if (decryptString !== uniqueString && res.status(401).json('uniqueString does not match the one stored in the database')) return;
+        if (decryptString !== uniqueString && res.status(401).json({msg:'uniqueString does not match the one stored in the database'})) return;
 
         const user = await User.findOneAndUpdate({ _id: userId }, { verified: true }, { new: true })
         if (!user) {
           res.status(401).json({
-            message: 'Unable to verify user',
+            msg: 'Unable to verify user',
           })
         } else {
          await UserVerification.deleteOne({ userId })
-          let { password, ...others } = user._doc;
-          res.status(201).json({ ...others });
+          // let { password, ...others } = user._doc;
+          res.status(201).json(user._doc);
         }
       }
 
     }
   } catch (err) {
     res.status(401).json({
-      message: 'User verification failed',
+      msg: 'User verification failed',
       err
     })
   }
@@ -164,11 +165,11 @@ export const getUser = async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
       res.status(401).json({
-        message: 'user not found',
+        msg: 'user not found',
       });
     } else if (!user.verified) {
       res.status(401).json({
-        message: 'user is not verified',
+        msg: 'user is not verified',
       });
 
     } else {
@@ -177,10 +178,9 @@ export const getUser = async (req, res) => {
         process.env.PASS_PHRASE
       );
       const decryptPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
-
       //evaluate password
       if (decryptPassword !== req.body.password) {
-        res.status(401).json('password does not match the one stored in the database');
+        res.status(401).json({msg:'password does not match the one stored in the database'});
       } else {
         const accessToken = jwt.sign(
           {

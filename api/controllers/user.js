@@ -3,31 +3,43 @@ import CryptoJS from 'crypto-js';
 
 
 export const updateUser = async (req, res) => {
-    if (req.body.password) {
-        let password = req.body.password;
-        password = CryptoJS.AES.encrypt(JSON.stringify(
-            req.body.password
-        ),
-            process.env.PASS_PHRASE
-        ).toString(); //encryt password
-    }
-
+    //if password changed or username
     try {
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            {
-                //find in db and set
-                $set: req.body,
-            },
-            {
-                new: true,
-            }
-        );
-        res.status(200).json(updatedUser);
+        if (req.body.password) {
+            //since it has be stringify before, there's no need again
+            const password = CryptoJS.AES.encrypt(
+                req.body.password
+                ,
+                process.env.PASS_PHRASE
+            )
+
+            const updatedUser = await User.findByIdAndUpdate(
+                req.params.id,
+                {
+                    password: password.toString()
+                },
+                {
+                    new: true,
+                }
+            );
+            res.status(200).json(updatedUser);
+        } else {
+            const updatedUser = await User.findByIdAndUpdate(
+                req.params.id,
+                {
+                    username: req.body.username,
+                },
+                {
+                    new: true,
+                }
+            );
+            res.status(200).json(updatedUser);
+        }
     } catch (err) {
         res.status(500).json(err);
     }
 }
+
 export const deleteUser = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
