@@ -19,7 +19,7 @@ mongoose
   .connect(process.env.MONGODB_URL)
   .then(() => {
     console.log('db connected');
-    })
+  })
   .catch((err) => {
     console.log(err);
   });
@@ -29,13 +29,13 @@ app.use(cors());
 
 
 // parse incoming body payload
-app.use(express.json({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
 // parse incoming url payload ++++
-app.use(express.urlencoded({extended: true, limit: '50mb'}));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 
 // auth routes
-app.use('/auth', authRoute );
+app.use('/auth', authRoute);
 
 
 //user routes
