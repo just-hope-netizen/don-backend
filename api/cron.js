@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const backendUrl = "https://don-backend-zyqg.onrender.com/products";
 
-const job = new cron.schedule("*/1 * * * *", async () => {
+const job = new cron.schedule("*/14 * * * *", async () => {
 
     try {
 
