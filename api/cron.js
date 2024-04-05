@@ -1,9 +1,7 @@
 import cron from "node-cron"
 import axios from 'axios';
-// import https
 
-// const backendUrl = "https://don-backend-zyqg.onrender.com/products";
-const backendUrl = "http://localhost:2000/products";
+const backendUrl = "https://don-backend-zyqg.onrender.com/products";
 
 const job = new cron.schedule("*/14 * * * *", async () => {
 
