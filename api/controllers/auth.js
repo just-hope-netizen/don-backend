@@ -56,8 +56,9 @@ export const postUser = async (req, res) => {
 const sendVerificationEmail = async (createdUser, res) => {
   const { _id, email } = createdUser._doc;
   //url to be used in the email
-  // const currentUrl = 'http://localhost:3000/'
-  const currentUrl = 'https://don-remolo.netlify.app/';
+
+  const currentUrl = 'http://localhost:3000/'
+  // const currentUrl = 'https://don-remolo.netlify.app/';
 
   const uniqueString = v4() + _id;
 
@@ -65,9 +66,10 @@ const sendVerificationEmail = async (createdUser, res) => {
     from: process.env.MAIL_USERNAME,
     to: email,
     subject: 'Verifiy Your Email',
-    html: `<p>Verify your email address to complete the signup and login into your account.</p><p>This link <b>expires in 6 hours</b>.</p> <p>Press <a href =${currentUrl + 'verify/' + _id + '/' + uniqueString}>here</a> to proceed.</p>`
+    html: `<p>Verify your email address to complete the signup and login into your account.</p>
+    <p>This link <b>expires in 6 hours</b>.</p> <p>Press <a href =${currentUrl + 'verify/' + _id + '/' + uniqueString}>here</a> to proceed.</p>`
   }
-
+  console.log(mailOptions);
   //encryt uniquestring
   const encryptedUniqueString = CryptoJS.AES.encrypt(
     uniqueString,
@@ -114,7 +116,7 @@ export const verifyUser = async (req, res) => {
       userId: userId
     })
 
-    
+
 
     if (verifyObject) {
       const { expiresAt } = verifyObject;
@@ -135,7 +137,7 @@ export const verifyUser = async (req, res) => {
         );
         const decryptString = hashedString.toString(CryptoJS.enc.Utf8);
 
-        if (decryptString !== uniqueString && res.status(401).json({msg:'uniqueString does not match the one stored in the database'})) return;
+        if (decryptString !== uniqueString && res.status(401).json({ msg: 'uniqueString does not match the one stored in the database' })) return;
 
         const user = await User.findOneAndUpdate({ _id: userId }, { verified: true }, { new: true })
         if (!user) {
@@ -143,7 +145,7 @@ export const verifyUser = async (req, res) => {
             msg: 'Unable to verify user',
           })
         } else {
-         await UserVerification.deleteOne({ userId })
+          await UserVerification.deleteOne({ userId })
           // let { password, ...others } = user._doc;
           res.status(201).json(user._doc);
         }
@@ -180,7 +182,7 @@ export const getUser = async (req, res) => {
       const decryptPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
       //evaluate password
       if (decryptPassword !== req.body.password) {
-        res.status(401).json({msg:'password does not match the one stored in the database'});
+        res.status(401).json({ msg: 'password does not match the one stored in the database' });
       } else {
         const accessToken = jwt.sign(
           {

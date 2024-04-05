@@ -9,6 +9,7 @@ import userRoute from './api/routes/user.js';
 import productRoute from './api/routes/product.js';
 import orderRoute from './api/routes/order.js';
 import { get404 } from './api/controllers/error.js';
+import job from './api/cron.js';
 
 const app = express();
 const Port = process.env.PORT || 2000;
@@ -53,5 +54,8 @@ app.use(get404);
 
 app.listen(Port, console.log('server started at port 2000')
 );
+
+//cron job to restart the server cus of render activity 
+job.start();
 
 
